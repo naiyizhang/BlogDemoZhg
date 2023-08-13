@@ -3,7 +3,6 @@ package com.my.blog.myapplication
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.my.blog.myapplication.view.FoldView
 import com.my.blog.myapplication.view.FolderView
 
 class FoldViewActivity : AppCompatActivity() {
