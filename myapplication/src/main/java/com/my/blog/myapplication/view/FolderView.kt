@@ -249,7 +249,7 @@ class FolderView @JvmOverloads constructor(
                 Math.pow(
                     mViewWidth.toDouble(),
                     2.0
-                ) + mPointX.toDouble()
+                ) - Math.pow(mPointX.toDouble(), 2.0)
             )).toFloat()
             mPointY += mValueAdd
         }
