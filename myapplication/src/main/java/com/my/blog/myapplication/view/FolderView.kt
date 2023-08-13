@@ -72,6 +72,11 @@ class FolderView @JvmOverloads constructor(
 
     var bitmaps = listOf<Bitmap>()
 
+    private val mVerts = FloatArray((SUB_HEIGHT + 1) * (SUB_WIDTH + 1) * 2)
+
+    private var mSubMinWidth = 0f
+    private var mSubMinHeight = 0f
+
     companion object {
         private const val TAG = "FolderView"
         const val VALUE_ADD_FACTOR = 1 / 500F
@@ -84,6 +89,9 @@ class FolderView @JvmOverloads constructor(
         const val AUTO_SLIDE_RIGHT_SPEED = 1 / 100F
 
         const val CURVATURE = 1 / 4F
+
+        const val SUB_WIDTH = 19
+        const val SUB_HEIGHT = 19
     }
 
     enum class Ratio {
@@ -164,6 +172,9 @@ class FolderView @JvmOverloads constructor(
         mAutoRightSpeed = mViewWidth * AUTO_SLIDE_RIGHT_SPEED
 
         initBitmaps()
+
+        mSubMinWidth = mViewWidth / (SUB_WIDTH)
+        mSubMinHeight = mViewHeight / (SUB_HEIGHT)
     }
 
     private fun computeFoldTouchRegion(): Region {
@@ -312,6 +323,29 @@ class FolderView @JvmOverloads constructor(
             mBottomPathSemicircle.quadTo(controlX.toFloat(), controlY, endX.toFloat(), endY)
             mBottomPathSemicircle.close()
 
+            val bottomStartIndex = Math.round(bottomXCoordinate / mSubMinWidth) - 1
+            val bottomEndIndex =
+                Math.round((bottomXCoordinate + CURVATURE * sizeShort) / mSubMinWidth) + 1
+            val offsetShort = CURVATURE / 2F * sizeShort
+            var multiOffsetShort = 1.0f
+            var index = 0
+            for (y in 0..SUB_HEIGHT) {
+                var fy = mViewHeight / SUB_HEIGHT * y
+                for (x in 0..SUB_WIDTH) {
+                    var fx = mViewWidth / SUB_WIDTH * x
+
+                    if (y == SUB_HEIGHT) {
+                        if (x in bottomStartIndex..bottomEndIndex) {
+                            fy =
+                                (mViewHeight / SUB_HEIGHT * y + offsetShort * multiOffsetShort).toFloat()
+                            multiOffsetShort *= 1.5F
+                        }
+                    }
+                    mVerts[index * 2 + 0] = fx
+                    mVerts[index * 2 + 1] = fy
+                    index++
+                }
+            }
         } else {
             val topYCoordinate = mViewHeight - sizeLong
             val bottomXCoordinate = mViewWidth - sizeShort
@@ -362,7 +396,6 @@ class FolderView @JvmOverloads constructor(
             }
 
             val longLengthMax = sizeLong * CURVATURE
-            Log.e(TAG, "onDraw: " + topYCoordinate + ", " + longLengthMax)
             if (topYCoordinate > -mValueAdd && topYCoordinate < longLengthMax - mValueAdd) {
                 val f = topYCoordinate / longLengthMax
                 val t = 0.5 * f
@@ -423,6 +456,45 @@ class FolderView @JvmOverloads constructor(
             mTopPathSemicircle.close()
 
             mBottomPathSemicircle.op(mTopPathSemicircle, Path.Op.UNION)
+
+
+            val bottomStartIndex = Math.round(bottomXCoordinate / mSubMinWidth) - 1
+            val bottomEndIndex =
+                Math.round((bottomXCoordinate + CURVATURE * sizeShort) / mSubMinWidth) + 1
+
+            val topStartIndex = Math.round(topYCoordinate / mSubMinHeight) - 1
+            val topEndIndex =
+                Math.round((topYCoordinate + CURVATURE * sizeLong) / mSubMinHeight) + 1
+
+            val offsetLong = CURVATURE / 2F * sizeLong
+            var multiOffsetLong = 1.0f
+            val offsetShort = CURVATURE / 2F * sizeShort
+            var multiOffsetShort = 1.0f
+            var index = 0
+            for (y in 0..SUB_HEIGHT) {
+                var fy = mViewHeight / SUB_HEIGHT * y
+                for (x in 0..SUB_WIDTH) {
+                    var fx = mViewWidth / SUB_WIDTH * x
+                    if (x == SUB_WIDTH) {
+                        if (y in topStartIndex..topEndIndex) {
+                            fx =
+                                (mViewWidth / SUB_WIDTH * x + offsetLong * multiOffsetLong).toFloat()
+                            multiOffsetLong *= 1.5F
+                        }
+                    }
+
+                    if (y == SUB_HEIGHT) {
+                        if (x in bottomStartIndex..bottomEndIndex) {
+                            fy =
+                                (mViewHeight / SUB_HEIGHT * y + offsetShort * multiOffsetShort).toFloat()
+                            multiOffsetShort *= 1.5F
+                        }
+                    }
+                    mVerts[index * 2 + 0] = fx
+                    mVerts[index * 2 + 1] = fy
+                    index++
+                }
+            }
         }
 
         mFoldPath.op(mPathTrap, Path.Op.UNION)
@@ -479,7 +551,8 @@ class FolderView @JvmOverloads constructor(
             canvas.scale(1f, -1f)
             canvas.translate(0f, -mViewHeight)
         }
-        canvas.drawBitmap(firstBitmap, 0f, 0f, null)
+//        canvas.drawBitmap(firstBitmap, 0f, 0f, null)
+        canvas.drawBitmapMesh(firstBitmap, SUB_WIDTH, SUB_HEIGHT, mVerts, 0, null, 0, null)
         canvas.restore()
         if (secondBitmap == null) {
             mIsLastPage = true

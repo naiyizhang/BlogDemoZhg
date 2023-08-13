@@ -28,6 +28,7 @@ import android.widget.Toast;
  * @version 1.0.0
  * @since 2014/12/27
  */
+@Deprecated
 public class FoldView extends View {
     private static final float VALUE_ADDED = 1 / 500F;// 精度附加值占比
     private static final float BUFF_AREA = 1 / 50F;// 底部缓冲区域占比
@@ -63,6 +64,8 @@ public class FoldView extends View {
     private boolean isSlide, isLastPage, isNextPage;// 是否执行滑动、是否已到最后一页、是否可显示下一页的标识值
 
     private Slide mSlide;// 定义当前滑动是往左下滑还是右下滑
+
+    private float[] verts = new float[20];
 
     /**
      * 枚举类定义滑动方向
