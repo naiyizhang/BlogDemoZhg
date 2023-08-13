@@ -21,7 +21,7 @@ import android.widget.Toast
 class FolderView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleDef: Int
+    defStyleDef: Int = 0
 ) : View(context, attrs, defStyleDef) {
 
     private var mLargerTextSize = 0f
@@ -103,18 +103,20 @@ class FolderView @JvmOverloads constructor(
         if (!mIsLastPage && (mPointX - mAutoLeftSpeed <= -mViewWidth)) {
             mPointX = -mViewWidth
             mPointY = mViewHeight
-            mPageIndex--
+            mPageIndex++
             invalidate()
         } else if (mSlide == Slide.LEFT && mPointX >= -mViewWidth) {
             mPointX -= mAutoLeftSpeed
             mPointY =
-                mStartY + (mViewHeight - mStartY) * (mStartX + mViewWidth) / (mStartX - mPointX)
+                mStartY + (mViewHeight - mStartY) * (mStartX - mPointX) / (mStartX + mViewWidth)
             invalidate()
             slideNextFrame()
         } else if (mSlide == Slide.RIGHT && mPointX <= mViewWidth) {
             mPointX += mAutoRightSpeed
             mPointY =
-                mStartY + (mViewHeight - mPointY) * (mPointX - mStartX) / (mViewWidth - mStartX)
+                mStartY + (mViewHeight - mStartY) * (mPointX - mStartX) / (mViewWidth - mStartX)
+
+
             invalidate()
             slideNextFrame()
         }
@@ -190,8 +192,10 @@ class FolderView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> downAndMove(x, y)
             MotionEvent.ACTION_UP -> {
                 if (x > mAutoSlideRight && y > mAutoSlidBottom) {
+                    mSlide = Slide.RIGHT
                     justSlide(x, y)
                 } else if (x < mAutoSlideLeft) {
+                    mSlide = Slide.LEFT
                     justSlide(x, y)
                 }
             }
@@ -200,7 +204,7 @@ class FolderView @JvmOverloads constructor(
     }
 
     private fun downAndMove(x: Float, y: Float) {
-        if (mIsLastPage) {
+        if (!mIsLastPage) {
             mPointX = x
             mPointY = y
             invalidate()
@@ -214,11 +218,15 @@ class FolderView @JvmOverloads constructor(
             return
         }
 
-        if ((mPointX == 0f && mPointY == 0f) || mPointY == mViewHeight) {
+        if ((mPointX == 0f && mPointY == 0f)) {
             canvas.drawBitmap(mBitmaps[0], 0f, 0f, null)
             return
         }
 
+        if (mPointY == mViewHeight) {
+            canvas.drawBitmap(mBitmaps[mPageIndex], 0f, 0f, null)
+            return
+        }
 
         canvas.drawColor(Color.WHITE)
 
@@ -295,14 +303,23 @@ class FolderView @JvmOverloads constructor(
     }
 
     private fun drawBitmaps(canvas: Canvas) {
+        if (mPageIndex < 0) {
+            mPageIndex = 0
+        }
         if (mPageIndex >= mBitmaps.size) {
             mIsLastPage = true
+            mPageIndex == mBitmaps.size - 1
             Toast.makeText(context, "this is the last page", Toast.LENGTH_SHORT).show()
             return
         }
+
         val firstBitmap = mBitmaps[mPageIndex]
         val secondBitmap = if (mPageIndex + 1 < mBitmaps.size) mBitmaps[mPageIndex + 1] else null
-
+        if (secondBitmap == null) {
+            Toast.makeText(context, "this is the last page", Toast.LENGTH_SHORT).show()
+            canvas.drawBitmap(firstBitmap, 0f, 0f, null)
+            return
+        }
         canvas.save()
         canvas.clipPath(mCurrentPath)
         canvas.clipPath(mFoldAndNextPath, Region.Op.DIFFERENCE)
@@ -326,6 +343,7 @@ class FolderView @JvmOverloads constructor(
         canvas.drawBitmap(firstBitmap, 0f, 0f, null)
         canvas.restore()
         if (secondBitmap == null) {
+            mIsLastPage = true
             Toast.makeText(context, "this is the last page", Toast.LENGTH_SHORT).show()
         } else {
             canvas.save()

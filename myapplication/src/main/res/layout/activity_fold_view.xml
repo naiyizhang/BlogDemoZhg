@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".FoldViewActivity">
 
-    <com.my.blog.myapplication.view.FoldView
+    <com.my.blog.myapplication.view.FolderView
         android:id="@+id/fold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
