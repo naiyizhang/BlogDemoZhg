@@ -13,6 +13,7 @@ import android.os.Looper
 import android.os.Message
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
@@ -37,6 +38,10 @@ class FolderView @JvmOverloads constructor(
 
     private val mFoldPath = Path()
     private val mFoldAndNextPath = Path()
+
+    private val mPathTrap = Path()
+    private val mBottomPathSemicircle = Path()
+    private val mTopPathSemicircle = Path()
 
     private var mFoldTouchRegion = Region()
 
@@ -65,9 +70,10 @@ class FolderView @JvmOverloads constructor(
 
     private var mSlide = Slide.LEFT
 
-    var mBitmaps = listOf<Bitmap>()
+    var bitmaps = listOf<Bitmap>()
 
     companion object {
+        private const val TAG = "FolderView"
         const val VALUE_ADD_FACTOR = 1 / 500F
         const val VALUE_BUFFER_AREA = 1 / 20F
 
@@ -76,6 +82,8 @@ class FolderView @JvmOverloads constructor(
 
         const val AUTO_SLIDE_LEFT_SPEED = 1 / 25F
         const val AUTO_SLIDE_RIGHT_SPEED = 1 / 100F
+
+        const val CURVATURE = 1 / 4F
     }
 
     enum class Ratio {
@@ -213,18 +221,18 @@ class FolderView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return super.onDraw(canvas)
-        if (mBitmaps.isEmpty()) {
+        if (bitmaps.isEmpty()) {
             showDefaultDisplay(canvas)
             return
         }
 
         if ((mPointX == 0f && mPointY == 0f)) {
-            canvas.drawBitmap(mBitmaps[0], 0f, 0f, null)
+            canvas.drawBitmap(bitmaps[0], 0f, 0f, null)
             return
         }
 
         if (mPointY == mViewHeight) {
-            canvas.drawBitmap(mBitmaps[mPageIndex], 0f, 0f, null)
+            canvas.drawBitmap(bitmaps[mPageIndex], 0f, 0f, null)
             return
         }
 
@@ -232,6 +240,9 @@ class FolderView @JvmOverloads constructor(
 
         mFoldPath.reset()
         mFoldAndNextPath.reset()
+        mPathTrap.reset()
+        mBottomPathSemicircle.reset()
+        mTopPathSemicircle.reset()
 
         if (!mFoldTouchRegion.contains(mPointX.toInt(), mPointY.toInt())) {
             mPointY = (mViewHeight - Math.sqrt(
@@ -255,8 +266,6 @@ class FolderView @JvmOverloads constructor(
         val sizeShort = temp / (2 * mK)
         val sizeLong = temp / (2 * mL)
 
-        mFoldPath.moveTo(mPointX, mPointY)
-        mFoldAndNextPath.moveTo(mPointX, mPointY)
         if (sizeLong > mViewHeight) {
             val tempOverSize = sizeLong - mViewHeight
             val topLargeSize = mK * tempOverSize / (sizeLong - mL)
@@ -264,30 +273,160 @@ class FolderView @JvmOverloads constructor(
 
             val largeXCoordinate = mViewWidth - topLargeSize
             val smallXCoordinate = mViewWidth - topSmallSize
+
             val bottomXCoordinate = mViewWidth - sizeShort
+
+            val startX = bottomXCoordinate - sizeShort * CURVATURE
+            val startY = mViewHeight
+
+            val controlX = bottomXCoordinate
+            val controlY = mViewHeight
+
+            val endX = bottomXCoordinate - (bottomXCoordinate - mPointX) * CURVATURE
+            val endY = mPointY + (1 - CURVATURE) * mL
+
+            val bezierPeakX = 0.25 * startX + 0.5 * controlX + 0.25 * endX
+            val bezierPeakY = 0.25 * startY + 0.5 * controlY + 0.25 * endY
+
+            mFoldPath.moveTo(startX.toFloat(), startY)
+            mFoldPath.quadTo(controlX.toFloat(), controlY, endX.toFloat(), endY)
+            mFoldPath.lineTo(mPointX, mPointY)
             mFoldPath.lineTo(largeXCoordinate.toFloat(), 0f)
             mFoldPath.lineTo(smallXCoordinate.toFloat(), 0f)
-            mFoldPath.lineTo(bottomXCoordinate.toFloat(), mViewHeight)
-            mFoldPath.close()
+//            mFoldPath.close()
 
+            mFoldAndNextPath.moveTo(startX.toFloat(), startY)
+            mFoldAndNextPath.quadTo(controlX.toFloat(), controlY, endX.toFloat(), endY)
+            mFoldAndNextPath.lineTo(mPointX, mPointY)
             mFoldAndNextPath.lineTo(largeXCoordinate.toFloat(), 0f)
             mFoldAndNextPath.lineTo(mViewWidth, 0f)
             mFoldAndNextPath.lineTo(mViewWidth, mViewHeight)
-            mFoldAndNextPath.lineTo(bottomXCoordinate.toFloat(), mViewHeight)
             mFoldAndNextPath.close()
+
+            mPathTrap.moveTo(startX.toFloat(), startY)
+            mPathTrap.lineTo(smallXCoordinate.toFloat(), 0f)
+            mPathTrap.lineTo(bezierPeakX.toFloat(), bezierPeakY.toFloat())
+            mPathTrap.close()
+
+            mBottomPathSemicircle.moveTo(startX.toFloat(), startY)
+            mBottomPathSemicircle.quadTo(controlX.toFloat(), controlY, endX.toFloat(), endY)
+            mBottomPathSemicircle.close()
+
         } else {
             val topYCoordinate = mViewHeight - sizeLong
             val bottomXCoordinate = mViewWidth - sizeShort
 
-            mFoldPath.lineTo(mViewWidth, topYCoordinate.toFloat())
-            mFoldPath.lineTo(bottomXCoordinate.toFloat(), mViewHeight)
-            mFoldPath.close()
+            var bottomStartX = bottomXCoordinate - sizeShort * CURVATURE
+            val bottomStartY = mViewHeight
 
-            mFoldAndNextPath.lineTo(mViewWidth, topYCoordinate.toFloat())
+            val bottomControlX = bottomXCoordinate
+            val bottomControlY = mViewHeight
+
+            val bottomEndX = bottomXCoordinate - (bottomXCoordinate - mPointX) * CURVATURE
+            val bottomEndY = mPointY + (1 - CURVATURE) * mL
+
+            var bottomBezierPeakX = 0.25 * bottomStartX + 0.5 * bottomControlX + 0.25 * bottomEndX
+            var bottomBezierPeakY = 0.25 * bottomStartY + 0.5 * bottomControlY + 0.25 * bottomEndY
+
+            val topStartX = mViewWidth
+            var topStartY = topYCoordinate - sizeLong * CURVATURE
+
+            val topControlX = mViewWidth
+            val topControlY = topYCoordinate
+
+//            val topEndX = mViewWidth - mK * CURVATURE
+            val topEndX = mPointX + (1 - CURVATURE) * mK
+            val topEndY = mPointY - (1 - CURVATURE) * (sizeLong - mL)
+
+            var topBezierPeakX = 0.25 * topStartX + 0.5 * topControlX + 0.25 * topEndX
+            var topBezierPeakY = 0.25 * topStartY + 0.5 * topControlY + 0.25 * topEndY
+
+            if (topStartY < 0) {
+                topStartY = 0.0
+            }
+            if (bottomStartX < 0f) {
+                bottomStartX = 0.0
+            }
+            val shortLengthMax = sizeShort * CURVATURE
+            if (bottomXCoordinate > -mValueAdd && bottomXCoordinate < shortLengthMax - mValueAdd) {
+                val f = bottomXCoordinate / shortLengthMax
+                val t = 0.5 * f
+                val bezierTemp = 1 - t
+                val bezierTemp1 = bezierTemp * bezierTemp
+                val bezierTemp2 = 2 * t * bezierTemp
+                val bezierTemp3 = t * t
+                bottomBezierPeakX =
+                    bezierTemp1 * bottomStartX + bezierTemp2 * bottomControlX + bezierTemp3 * bottomEndX
+                bottomBezierPeakY =
+                    bezierTemp1 * bottomStartY + bezierTemp2 * bottomControlY + bezierTemp3 * bottomEndY
+            }
+
+            val longLengthMax = sizeLong * CURVATURE
+            Log.e(TAG, "onDraw: " + topYCoordinate + ", " + longLengthMax)
+            if (topYCoordinate > -mValueAdd && topYCoordinate < longLengthMax - mValueAdd) {
+                val f = topYCoordinate / longLengthMax
+                val t = 0.5 * f
+                val bezierTemp = 1 - t
+                val bezierTemp1 = bezierTemp * bezierTemp
+                val bezierTemp2 = 2 * t * bezierTemp
+                val bezierTemp3 = t * t
+                topBezierPeakX =
+                    bezierTemp1 * topStartX + bezierTemp2 * topControlX + bezierTemp3 * topEndX
+                topBezierPeakY =
+                    bezierTemp1 * topStartY + bezierTemp2 * topControlY + bezierTemp3 * topEndY
+            }
+
+            mFoldPath.moveTo(bottomStartX.toFloat(), bottomStartY)
+            mFoldPath.quadTo(
+                bottomControlX.toFloat(), bottomControlY,
+                bottomEndX.toFloat(), bottomEndY
+            )
+            mFoldPath.lineTo(mPointX, mPointY)
+            mFoldPath.lineTo(topEndX, topEndY.toFloat())
+            mFoldPath.quadTo(topControlX, topControlY.toFloat(), topStartX, topStartY.toFloat())
+//            mFoldPath.close()
+
+            mFoldAndNextPath.moveTo(bottomStartX.toFloat(), bottomStartY)
+            mFoldAndNextPath.quadTo(
+                bottomControlX.toFloat(), bottomControlY,
+                bottomEndX.toFloat(), bottomEndY
+            )
+            mFoldAndNextPath.lineTo(mPointX, mPointY)
+            mFoldAndNextPath.lineTo(topEndX, topEndY.toFloat())
+            mFoldAndNextPath.quadTo(
+                topControlX,
+                topControlY.toFloat(),
+                topStartX,
+                topStartY.toFloat()
+            )
             mFoldAndNextPath.lineTo(mViewWidth, mViewHeight)
-            mFoldAndNextPath.lineTo(bottomXCoordinate.toFloat(), mViewHeight)
             mFoldAndNextPath.close()
+
+            mPathTrap.moveTo(bottomStartX.toFloat(), bottomStartY)
+            mPathTrap.lineTo(topStartX, topStartY.toFloat())
+            mPathTrap.lineTo(topBezierPeakX.toFloat(), topBezierPeakY.toFloat())
+            mPathTrap.lineTo(bottomBezierPeakX.toFloat(), bottomBezierPeakY.toFloat())
+            mPathTrap.close()
+
+            mBottomPathSemicircle.moveTo(bottomStartX.toFloat(), bottomStartY)
+            mBottomPathSemicircle.quadTo(
+                bottomControlX.toFloat(), bottomControlY,
+                bottomEndX.toFloat(), bottomEndY
+            )
+            mBottomPathSemicircle.close()
+
+            mTopPathSemicircle.moveTo(topEndX, topEndY.toFloat())
+            mTopPathSemicircle.quadTo(
+                topControlX, topControlY.toFloat(), topStartX,
+                topStartY.toFloat()
+            )
+            mTopPathSemicircle.close()
+
+            mBottomPathSemicircle.op(mTopPathSemicircle, Path.Op.UNION)
         }
+
+        mFoldPath.op(mPathTrap, Path.Op.UNION)
+        mFoldPath.op(mBottomPathSemicircle, Path.Op.DIFFERENCE)
 
         if (sizeShort < sizeLong) {
             mRatio = Ratio.SHORT
@@ -306,15 +445,15 @@ class FolderView @JvmOverloads constructor(
         if (mPageIndex < 0) {
             mPageIndex = 0
         }
-        if (mPageIndex >= mBitmaps.size) {
+        if (mPageIndex >= bitmaps.size) {
             mIsLastPage = true
-            mPageIndex == mBitmaps.size - 1
+            mPageIndex == bitmaps.size - 1
             Toast.makeText(context, "this is the last page", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val firstBitmap = mBitmaps[mPageIndex]
-        val secondBitmap = if (mPageIndex + 1 < mBitmaps.size) mBitmaps[mPageIndex + 1] else null
+        val firstBitmap = bitmaps[mPageIndex]
+        val secondBitmap = if (mPageIndex + 1 < bitmaps.size) bitmaps[mPageIndex + 1] else null
         if (secondBitmap == null) {
             Toast.makeText(context, "this is the last page", Toast.LENGTH_SHORT).show()
             canvas.drawBitmap(firstBitmap, 0f, 0f, null)
@@ -365,9 +504,22 @@ class FolderView @JvmOverloads constructor(
 
     private fun initBitmaps() {
         val list = mutableListOf<Bitmap>()
-        for (bm in mBitmaps) {
+        for (bm in bitmaps) {
             list.add(Bitmap.createScaledBitmap(bm, mViewWidth.toInt(), mViewHeight.toInt(), true))
         }
-        mBitmaps = list
+        bitmaps = list
+    }
+
+    private fun computeRegion(path: Path): Region {
+        val region = Region()
+        val rectF = RectF()
+        path.computeBounds(rectF, true)
+        region.setPath(
+            path, Region(
+                rectF.left.toInt(), rectF.top.toInt(), rectF.right.toInt(),
+                rectF.bottom.toInt()
+            )
+        )
+        return region
     }
 }
