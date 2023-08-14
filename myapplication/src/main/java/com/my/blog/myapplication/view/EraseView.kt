@@ -73,6 +73,10 @@ class EraseView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return
         canvas.drawBitmap(mBgBitmap, 0f, 0f, null)
-        canvas.drawBitmap(mFgBitmap, 0f, 0f, null)
+//        canvas.drawBitmap(mFgBitmap, 0f, 0f, null)
+        val sc = canvas.saveLayer(0f,0f, width.toFloat(), height.toFloat(),null)
+        canvas.drawColor(Color.GRAY)
+        canvas.drawPath(mPath,mPaint)
+        canvas.restoreToCount(sc)
     }
 }
