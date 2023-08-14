@@ -12,6 +12,7 @@ import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import com.my.blog.myapplication.R
 
 class EraseView @JvmOverloads constructor(
@@ -31,6 +32,8 @@ class EraseView @JvmOverloads constructor(
     private var mPreX = 0f
     private var mPreY = 0f
 
+    private val mTouchSlop = ViewConfiguration.get(getContext()).scaledTouchSlop
+
     init {
         mPaint.style = Paint.Style.STROKE
         mPaint.strokeWidth = 50f
@@ -38,6 +41,7 @@ class EraseView @JvmOverloads constructor(
         mPaint.strokeJoin = Paint.Join.ROUND
         mPaint.color = Color.WHITE
         mPaint.xfermode = PorterDuffXfermode(Mode.DST_OUT)
+
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -59,12 +63,14 @@ class EraseView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
-                mPath.quadTo(mPreX, mPreY, (mPreX + event.x) / 2, (mPreY + event.y) / 2)
-                mPreX = event.x
-                mPreY = event.y
+                if (Math.abs(event.x - mPreX) > mTouchSlop || Math.abs(event.y - mPreY) > mTouchSlop) {
+                    mPath.quadTo(mPreX, mPreY, (mPreX + event.x) / 2, (mPreY + event.y) / 2)
+                    mPreX = event.x
+                    mPreY = event.y
 
-                mCanvas.drawPath(mPath, mPaint)
-                invalidate()
+                    mCanvas.drawPath(mPath, mPaint)
+                    invalidate()
+                }
             }
         }
         return true
@@ -74,9 +80,9 @@ class EraseView @JvmOverloads constructor(
         canvas ?: return
         canvas.drawBitmap(mBgBitmap, 0f, 0f, null)
 //        canvas.drawBitmap(mFgBitmap, 0f, 0f, null)
-        val sc = canvas.saveLayer(0f,0f, width.toFloat(), height.toFloat(),null)
+        val sc = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
         canvas.drawColor(Color.GRAY)
-        canvas.drawPath(mPath,mPaint)
+        canvas.drawPath(mPath, mPaint)
         canvas.restoreToCount(sc)
     }
 }
