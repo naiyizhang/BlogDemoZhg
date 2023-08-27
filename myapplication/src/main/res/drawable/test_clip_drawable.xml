@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<clip xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipOrientation="vertical"
+
+    android:gravity="center">
+
+    <shape
+        android:innerRadius="20dp"
+        android:shape="ring"
+        android:thickness="5dp">
+        <size
+            android:width="50dp"
+            android:height="50dp" />
+        <gradient
+            android:endColor="#0000FF"
+            android:startColor="#FF0000"
+            android:type="sweep"></gradient>
+    </shape>
+</clip>

@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BlogDemoZhg">
         <activity
+            android:name=".TestDrawableActivity"
+            android:exported="false" />
+        <activity
             android:name=".EraseActivity"
             android:exported="false" />
         <activity
@@ -22,7 +25,7 @@
         </activity>
         <activity
             android:name=".FoldViewActivity"
-            android:exported="false"></activity>
+            android:exported="false" />
     </application>
 
 </manifest>

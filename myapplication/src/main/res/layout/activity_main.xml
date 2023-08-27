@@ -23,4 +23,13 @@
         android:text="EraseView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/erase"
+        android:text="Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

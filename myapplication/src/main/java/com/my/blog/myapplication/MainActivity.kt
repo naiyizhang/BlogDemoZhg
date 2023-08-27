@@ -17,5 +17,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.erase).setOnClickListener {
             startActivity(Intent(this, EraseActivity::class.java))
         }
+
+        findViewById<Button>(R.id.button).setOnClickListener {
+            startActivity(Intent(this,TestDrawableActivity::class.java))
+        }
     }
 }
