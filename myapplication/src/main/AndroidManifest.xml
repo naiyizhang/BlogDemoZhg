@@ -9,6 +9,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BlogDemoZhg">
         <activity
+            android:name=".TestPathActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TestScaleActivity"
+            android:exported="false" />
+        <activity
             android:name=".TestDrawableActivity"
             android:exported="false" />
         <activity

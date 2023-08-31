@@ -21,5 +21,13 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button).setOnClickListener {
             startActivity(Intent(this,TestDrawableActivity::class.java))
         }
+
+        findViewById<Button>(R.id.scale).setOnClickListener {
+            startActivity(Intent(this,TestScaleActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.path).setOnClickListener {
+            startActivity(Intent(this,TestPathActivity::class.java))
+        }
     }
 }
