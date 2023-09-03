@@ -29,5 +29,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.path).setOnClickListener {
             startActivity(Intent(this,TestPathActivity::class.java))
         }
+
+        findViewById<Button>(R.id.gird).setOnClickListener {
+            startActivity(Intent(this,TestGridActivity::class.java))
+        }
     }
 }

@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BlogDemoZhg">
         <activity
+            android:name=".TestGridActivity"
+            android:exported="false" />
+        <activity
             android:name=".TestPathActivity"
             android:exported="false" />
         <activity
