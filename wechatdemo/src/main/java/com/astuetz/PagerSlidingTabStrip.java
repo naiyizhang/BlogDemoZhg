@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.my.blog.wechatdemo;
+package com.astuetz;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -37,6 +37,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.viewpager.widget.ViewPager;
+
+import com.my.blog.wechatdemo.R;
 
 import java.util.Locale;
 
