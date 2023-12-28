@@ -1,5 +1,6 @@
 package com.my.blog.wechatdemo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -28,6 +29,13 @@ public class ChatFragment extends Fragment {
         v.setText("聊天界面");
         v.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, dm));
         fl.addView(v);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent("com.zhg.test1");
+                startActivity(intent);
+            }
+        });
         return fl;
     }
 }

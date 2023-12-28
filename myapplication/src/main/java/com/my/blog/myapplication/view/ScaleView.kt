@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import com.my.blog.myapplication.R
 
@@ -19,7 +20,14 @@ class ScaleView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     private val bitmap = BitmapFactory.decodeResource(resources, R.drawable.img_5)
 
+    private  val TAG = "ScaleView"
     init {
+        val count = attrs?.attributeCount ?: 0
+        for (index in 0 until count) {
+            val name = attrs?.getAttributeName(index)
+            val value = attrs?.getAttributeValue(index)
+            Log.e(TAG, "name = $name, value is $value ", )
+        }
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 50f
@@ -35,7 +43,7 @@ class ScaleView @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         canvas.drawLine(0f, 100f, width.toFloat(), 100f, paint)
         matrix.reset()
         matrix.postScale(2f, 2f)
-        matrix.postTranslate((width/2f - bitmap.width) , (height/2f - bitmap.height) )
+        matrix.postTranslate((width / 2f - bitmap.width), (height / 2f - bitmap.height))
 
         canvas.drawBitmap(bitmap, matrix, null)
 

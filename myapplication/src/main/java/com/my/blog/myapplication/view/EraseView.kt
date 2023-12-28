@@ -26,7 +26,7 @@ class EraseView @JvmOverloads constructor(
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.DITHER_FLAG)
 
     private lateinit var mFgBitmap: Bitmap
-    private var mBgBitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img)
+    private var mBgBitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img_little_logo)
     private lateinit var mCanvas: Canvas
 
     private var mPreX = 0f
@@ -76,7 +76,8 @@ class EraseView @JvmOverloads constructor(
         return true
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
+
         canvas ?: return
         canvas.drawBitmap(mBgBitmap, 0f, 0f, null)
 //        canvas.drawBitmap(mFgBitmap, 0f, 0f, null)

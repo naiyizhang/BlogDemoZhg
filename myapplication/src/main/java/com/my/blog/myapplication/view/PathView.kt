@@ -28,7 +28,6 @@ class PathView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
         paint.color = Color.RED
         paint.pathEffect = DashPathEffect(floatArrayOf(20f, 10f), mPhase)
         canvas.drawPath(path, paint)

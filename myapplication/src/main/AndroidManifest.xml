@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -8,6 +13,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BlogDemoZhg">
+        <activity
+            android:name=".LottieActivity"
+            android:exported="false" />
+        <activity
+            android:name=".glide.TestGlideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.TestCActivity"
+            android:allowTaskReparenting="true"
+            android:exported="true"
+            android:finishOnTaskLaunch="true">
+            <intent-filter>
+                <action android:name="com.zhg.test1" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.TestBActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.TestAActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TestSpanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TestFloatViewActivity"
+            android:exported="false" />
         <activity
             android:name=".TestGridActivity"
             android:exported="false" />

@@ -230,7 +230,7 @@ class FolderView @JvmOverloads constructor(
         }
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         canvas ?: return super.onDraw(canvas)
         if (bitmaps.isEmpty()) {
             showDefaultDisplay(canvas)

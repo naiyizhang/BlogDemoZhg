@@ -10,9 +10,14 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        jcenter()
     }
 }
 
 rootProject.name = "BlogDemoZhg"
 include(":app")
 include(":myapplication")
+include(":mylibrary")
+include(":wechatdemo")
+include(":callphone")
+include(":callmenow")

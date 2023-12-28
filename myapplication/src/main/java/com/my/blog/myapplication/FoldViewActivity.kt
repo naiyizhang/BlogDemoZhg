@@ -11,7 +11,7 @@ class FoldViewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fold_view)
         val foldView = findViewById<FolderView>(R.id.fold)
         foldView.bitmaps = (listOf(
-            BitmapFactory.decodeResource(resources, R.drawable.img),
+            BitmapFactory.decodeResource(resources, R.drawable.img_little_logo),
             BitmapFactory.decodeResource(resources, R.drawable.img_1),
             BitmapFactory.decodeResource(resources, R.drawable.img_2),
             BitmapFactory.decodeResource(resources, R.drawable.img_3),
